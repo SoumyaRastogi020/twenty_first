@@ -192,9 +192,17 @@ const LocationPanel = (function () {
     els.sheet.classList.toggle("is-reel-sheet", isReel);
 
     if (isReel) {
-      reelCleanup = ReelPanel.mount(location, els.body, {
-        openLightbox: openLightbox,
-      });
+      if (typeof ReelPanel === "undefined") {
+        console.error(
+          "ReelPanel not loaded — check that js/reel-panel.js is deployed."
+        );
+        els.body.innerHTML =
+          '<p class="media-missing">Reel could not load. Try a hard refresh.</p>';
+      } else {
+        reelCleanup = ReelPanel.mount(location, els.body, {
+          openLightbox: openLightbox,
+        });
+      }
     } else {
       const blocks = location.content || [];
       let i = 0;
