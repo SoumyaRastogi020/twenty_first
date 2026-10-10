@@ -176,7 +176,17 @@ const LOCATIONS = [
     name: "Ulwe, Navi Mumbai",
     lat: 18.9877,
     lng: 73.0231,
-    content: [{ type: "story", title: "Ulwe", date: "—", text: "Across the harbour." }],
+    /** Auto-scrolling reel panel — set on other locations to reuse this layout */
+    presentation: "reel",
+    content: [
+      { type: "snippet", text: "No one I'd rather cross the sea with" },
+      { type: "photo", src: "assets/ulwe/01.jpg", caption: "" },
+      { type: "video", src: "assets/ulwe/01.mp4", poster: "assets/ulwe/01.jpg" },
+      { type: "photo", src: "assets/ulwe/02.jpg", caption: "" },
+      { type: "snippet", text: "and to prawns fried rice ;)" },
+      { type: "video", src: "assets/ulwe/02.mp4", poster: "assets/ulwe/02.jpg" },
+      { type: "video", src: "assets/ulwe/03.mp4", poster: "assets/ulwe/02.jpg" },
+    ],
   },
   {
     id: "imagica",
