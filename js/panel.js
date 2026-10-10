@@ -6,6 +6,7 @@ const LocationPanel = (function () {
   let onOpenLocation = null;
   let onClosePanel = null;
   let dragState = null;
+  let reelCleanup = null;
 
   function init(options) {
     onOpenLocation = options.onFirstOpen || null;
@@ -44,6 +45,7 @@ const LocationPanel = (function () {
       "pointerdown",
       (e) => {
         if (window.matchMedia("(min-width: 900px)").matches) return;
+        if (e.target.closest(".reel-viewport")) return;
         if (e.target.closest(".panel-body") && sheet.scrollTop > 0) return;
         start(e.clientY);
         sheet.setPointerCapture(e.pointerId);
@@ -177,22 +179,38 @@ const LocationPanel = (function () {
   }
 
   function open(location, isDiscovered) {
+    if (reelCleanup) {
+      reelCleanup();
+      reelCleanup = null;
+    }
+
     els.title.textContent = location.name;
     els.body.innerHTML = "";
-    const blocks = location.content || [];
-    let i = 0;
-    while (i < blocks.length) {
-      if (blocks[i].type === "photo") {
-        const group = [];
-        while (i < blocks.length && blocks[i].type === "photo") {
-          group.push(blocks[i]);
-          i += 1;
+    const isReel = location.presentation === "reel";
+
+    els.root.classList.toggle("is-reel", isReel);
+    els.sheet.classList.toggle("is-reel-sheet", isReel);
+
+    if (isReel) {
+      reelCleanup = ReelPanel.mount(location, els.body, {
+        openLightbox: openLightbox,
+      });
+    } else {
+      const blocks = location.content || [];
+      let i = 0;
+      while (i < blocks.length) {
+        if (blocks[i].type === "photo") {
+          const group = [];
+          while (i < blocks.length && blocks[i].type === "photo") {
+            group.push(blocks[i]);
+            i += 1;
+          }
+          els.body.appendChild(renderPhotoGroup(group));
+          continue;
         }
-        els.body.appendChild(renderPhotoGroup(group));
-        continue;
+        els.body.appendChild(renderBlock(blocks[i]));
+        i += 1;
       }
-      els.body.appendChild(renderBlock(blocks[i]));
-      i += 1;
     }
 
     els.root.hidden = false;
@@ -207,6 +225,12 @@ const LocationPanel = (function () {
   function close() {
     els.root.classList.remove("is-open");
     setTimeout(() => {
+      if (reelCleanup) {
+        reelCleanup();
+        reelCleanup = null;
+      }
+      els.root.classList.remove("is-reel");
+      els.sheet.classList.remove("is-reel-sheet");
       els.root.hidden = true;
       els.root.setAttribute("aria-hidden", "true");
       if (onClosePanel) onClosePanel();
