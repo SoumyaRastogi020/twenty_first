@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#1a1520" />
+    <title>Twenty First — Bombay Map</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.min.css"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.min.css"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <!-- Optional soft gate (see config.js) -->
+    <div id="gate-screen" class="screen screen--gate" hidden>
+      <div class="gate-card">
+        <p class="gate-prompt" id="gate-prompt"></p>
+        <form id="gate-form" class="gate-form" autocomplete="off">
+          <input
+            type="password"
+            id="gate-input"
+            class="gate-input"
+            inputmode="text"
+            autocapitalize="off"
+            autocomplete="off"
+            aria-label="Password"
+          />
+          <button type="submit" class="btn btn--primary">Enter</button>
+        </form>
+        <p class="gate-error" id="gate-error" hidden>Not quite, try again</p>
+      </div>
+    </div>
+
+    <!-- Tap-to-unlock media on iOS -->
+    <div id="intro-tap-screen" class="screen screen--intro-tap" hidden>
+      <button type="button" class="btn btn--ghost btn--tap-begin" id="btn-tap-begin">
+        Tap to begin
+      </button>
+      <a href="#" class="skip-intro" id="skip-intro">Skip intro</a>
+    </div>
+
+    <div id="intro-message-screen" class="screen screen--message" hidden>
+      <div class="intro-message-layout">
+        <p class="intro-message" id="intro-message-text"></p>
+        <div class="intro-message-actions">
+          <button
+            type="button"
+            class="btn btn--primary btn--continue"
+            id="btn-continue"
+            aria-hidden="true"
+            tabindex="-1"
+          >
+            Continue
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="intro-flash-screen" class="screen screen--flash" hidden>
+      <div class="flash-loading" id="flash-loading">
+        <span class="flash-loading__spinner" aria-hidden="true"></span>
+        <span>Getting memories ready…</span>
+      </div>
+      <div id="flash-frame" class="flash-frame" hidden>
+        <img id="flash-image" class="flash-image" alt="" />
+      </div>
+    </div>
+
+    <div id="disperse-screen" class="screen screen--disperse" hidden>
+      <div id="disperse-cards" class="disperse-cards"></div>
+    </div>
+
+    <main id="app" class="app" hidden>
+      <header class="progress-header" aria-live="polite">
+        <div class="progress-text">
+          <span id="progress-count">0</span> of <span id="progress-total">0</span>
+          places discovered
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+      </header>
+
+      <div
+        id="map-viewport"
+        class="map-viewport"
+        aria-label="Interactive map of Bombay"
+      >
+        <div id="leaflet-map" class="leaflet-map"></div>
+      </div>
+
+      <div class="map-controls" aria-label="Map shortcuts">
+        <button type="button" class="map-control-btn map-control-btn--desktop" id="btn-zoom-in" aria-label="Zoom in">
+          +
+        </button>
+        <button type="button" class="map-control-btn map-control-btn--desktop" id="btn-zoom-out" aria-label="Zoom out">
+          −
+        </button>
+        <button type="button" class="map-control-btn map-control-btn--wide" id="btn-south-mumbai">
+          South Mumbai
+        </button>
+        <button type="button" class="map-control-btn map-control-btn--wide" id="btn-reset-view">
+          Reset view
+        </button>
+      </div>
+    </main>
+
+    <div id="location-panel" class="location-panel" hidden aria-hidden="true">
+      <div class="location-panel__backdrop" id="panel-backdrop"></div>
+      <div class="location-panel__sheet" id="panel-sheet">
+        <div class="panel-drag-handle" id="panel-handle" aria-hidden="true"></div>
+        <button type="button" class="panel-close" id="panel-close" aria-label="Close">
+          ×
+        </button>
+        <header class="panel-header">
+          <h2 class="panel-title" id="panel-title"></h2>
+        </header>
+        <div class="panel-body" id="panel-body"></div>
+      </div>
+    </div>
+
+    <div id="lightbox" class="lightbox" hidden>
+      <button type="button" class="lightbox-close" id="lightbox-close" aria-label="Close">
+        ×
+      </button>
+      <img id="lightbox-img" class="lightbox-img" alt="" />
+      <p class="lightbox-caption" id="lightbox-caption"></p>
+    </div>
+
+    <div id="final-screen" class="screen screen--final" hidden>
+      <div class="final-card">
+        <h2 class="final-title" id="final-title"></h2>
+        <p class="final-text" id="final-text"></p>
+        <button type="button" class="btn btn--primary" id="btn-final-close">
+          Back to map
+        </button>
+      </div>
+      <canvas id="confetti-canvas" class="confetti-canvas" aria-hidden="true"></canvas>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="data/locations.js"></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.min.js"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script src="js/intro.js"></script>
+    <script src="js/map.js"></script>
+    <script src="js/panel.js"></script>
+    <script src="js/main.js"></script>
+  </body>
+</html>

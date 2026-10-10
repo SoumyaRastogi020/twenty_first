@@ -1,0 +1,322 @@
+/**
+ * App flow: gate → intro → map. Progress, storage, celebration.
+ */
+(function () {
+  const state = {
+    discovered: new Set(),
+    introComplete: false,
+  };
+
+  const els = {};
+
+  function $(id) {
+    return document.getElementById(id);
+  }
+
+  const SCREEN_FADE_MS = 700;
+
+  function activateScreen(el) {
+    if (!el) return;
+    el.hidden = false;
+    requestAnimationFrame(() => el.classList.add("is-active"));
+  }
+
+  function deactivateScreen(el, done) {
+    if (!el || el.hidden) {
+      if (done) done();
+      return;
+    }
+    el.classList.remove("is-active");
+    setTimeout(() => {
+      el.hidden = true;
+      if (done) done();
+    }, SCREEN_FADE_MS);
+  }
+
+  /** Fade out `from`, fade in `to` (overlap for a softer handoff). */
+  function crossfadeScreen(from, to, onMid) {
+    if (to) activateScreen(to);
+    if (from && !from.hidden) from.classList.remove("is-active");
+    setTimeout(() => {
+      if (from) from.hidden = true;
+      if (onMid) onMid();
+    }, Math.round(SCREEN_FADE_MS * 0.45));
+  }
+
+  function loadDiscovered() {
+    try {
+      const raw = localStorage.getItem(CONFIG.STORAGE_KEY);
+      if (raw) {
+        JSON.parse(raw).forEach((id) => state.discovered.add(id));
+      }
+    } catch (_) {
+      /* private mode / blocked storage */
+    }
+  }
+
+  function saveDiscovered() {
+    try {
+      localStorage.setItem(
+        CONFIG.STORAGE_KEY,
+        JSON.stringify([...state.discovered])
+      );
+    } catch (_) {}
+  }
+
+  function updateProgress() {
+    const total = LOCATIONS.length;
+    const count = state.discovered.size;
+    $("progress-count").textContent = String(count);
+    $("progress-total").textContent = String(total);
+    const pct = total ? (count / total) * 100 : 0;
+    $("progress-fill").style.width = pct + "%";
+
+    if (count >= total && total > 0 && state.introComplete) {
+      showCelebration();
+    }
+  }
+
+  function markDiscovered(id) {
+    if (state.discovered.has(id)) return;
+    state.discovered.add(id);
+    saveDiscovered();
+    MapController.setDiscovered(state.discovered);
+    updateProgress();
+  }
+
+  /* --- Gate (soft only — hash is in source; not real security) --- */
+  async function sha256Hex(text) {
+    const data = new TextEncoder().encode(text);
+    const buf = await crypto.subtle.digest("SHA-256", data);
+    return [...new Uint8Array(buf)]
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
+  }
+
+  function gateSessionOk() {
+    try {
+      return sessionStorage.getItem(CONFIG.SESSION_GATE_KEY) === "1";
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function setGateSessionOk() {
+    try {
+      sessionStorage.setItem(CONFIG.SESSION_GATE_KEY, "1");
+    } catch (_) {}
+  }
+
+  async function initGate() {
+    const screen = $("gate-screen");
+    if (!CONFIG.GATE_ENABLED || gateSessionOk()) {
+      screen.hidden = true;
+      showIntroTap();
+      return;
+    }
+
+    activateScreen(screen);
+    $("gate-prompt").textContent = CONFIG.GATE_PROMPT;
+    const form = $("gate-form");
+    const input = $("gate-input");
+    const err = $("gate-error");
+    const card = screen.querySelector(".gate-card");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      err.hidden = true;
+      const guess = (input.value || "").trim().toLowerCase();
+      const hash = await sha256Hex(guess);
+      if (hash === CONFIG.GATE_PASSWORD_SHA256) {
+        setGateSessionOk();
+        crossfadeScreen(screen, $("intro-tap-screen"));
+      } else {
+        err.hidden = false;
+        card.classList.remove("shake");
+        void card.offsetWidth;
+        card.classList.add("shake");
+      }
+    });
+  }
+
+  function showIntroTap() {
+    activateScreen($("intro-tap-screen"));
+  }
+
+  function bindIntro() {
+    const tapScreen = $("intro-tap-screen");
+    const msgScreen = $("intro-message-screen");
+    const flashScreen = $("intro-flash-screen");
+    const disperseScreen = $("disperse-screen");
+
+    $("intro-message-text").textContent = CONFIG.INTRO_MESSAGE;
+
+    const btnContinue = $("btn-continue");
+
+    $("btn-tap-begin").addEventListener("click", () => {
+      const msg = $("intro-message-text");
+      msg.classList.remove("is-visible");
+      btnContinue.classList.remove("is-visible");
+      btnContinue.setAttribute("aria-hidden", "true");
+      btnContinue.tabIndex = -1;
+
+      crossfadeScreen(tapScreen, msgScreen, () => {
+        msg.classList.add("is-visible");
+        setTimeout(() => {
+          btnContinue.classList.add("is-visible");
+          btnContinue.setAttribute("aria-hidden", "false");
+          btnContinue.tabIndex = 0;
+        }, 3500);
+      });
+    });
+
+    btnContinue.addEventListener("click", startFlash);
+    $("skip-intro").addEventListener("click", (e) => {
+      e.preventDefault();
+      skipToMap();
+    });
+
+    function startFlash() {
+      crossfadeScreen(msgScreen, flashScreen, () => {
+        runFlashAfterFade();
+      });
+    }
+
+    function runFlashAfterFade() {
+      IntroFlow.runFlashSequence(
+        CONFIG.INTRO_PHOTOS,
+        $("flash-frame"),
+        $("flash-image"),
+        $("flash-loading"),
+        (loaded) => {
+          $("app").hidden = false;
+          $("app").classList.add("is-intro-reveal");
+          MapController.prepareIntroView();
+          activateScreen(disperseScreen);
+          IntroFlow.runDisperse(
+            loaded,
+            $("disperse-cards"),
+            (i) => MapController.getDisperseTargetForIndex(i),
+            () => {
+              deactivateScreen(disperseScreen);
+              $("app").classList.remove("is-intro-reveal");
+              $("flash-frame").hidden = true;
+              flashScreen.hidden = true;
+              flashScreen.classList.remove("is-active");
+              MapController.flyToFullTrip();
+              finishIntro({ animateView: false });
+            }
+          );
+          $("flash-frame").hidden = true;
+          deactivateScreen(flashScreen);
+        }
+      );
+    }
+
+    /** @param {{ animateView?: boolean }} opts — animateView false if flyToFullTrip already ran */
+    function finishIntro(opts) {
+      const animateView = !opts || opts.animateView !== false;
+      state.introComplete = true;
+      disperseScreen.hidden = true;
+      tapScreen.hidden = true;
+      msgScreen.hidden = true;
+      flashScreen.hidden = true;
+      $("app").hidden = false;
+      MapController.onIntroComplete(animateView);
+      updateProgress();
+    }
+
+    function skipToMap() {
+      [tapScreen, msgScreen, flashScreen, disperseScreen].forEach((el) => {
+        el.hidden = true;
+      });
+      $("app").hidden = false;
+      finishIntro({ animateView: true });
+    }
+
+    window.__skipToMap = skipToMap;
+  }
+
+  function showCelebration() {
+    if ($("final-screen").dataset.shown === "1") return;
+    $("final-screen").dataset.shown = "1";
+    $("final-title").textContent = CONFIG.FINAL_MESSAGE.title;
+    $("final-text").textContent = CONFIG.FINAL_MESSAGE.text;
+    $("final-screen").hidden = false;
+    runConfetti();
+  }
+
+  function runConfetti() {
+    const canvas = $("confetti-canvas");
+    const ctx = canvas.getContext("2d");
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduced) return;
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    const pieces = Array.from({ length: 120 }, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height - canvas.height,
+      r: 4 + Math.random() * 6,
+      vx: (Math.random() - 0.5) * 2,
+      vy: 2 + Math.random() * 4,
+      color: ["#ff6b6b", "#7ec4a8", "#ffd93d", "#ff9a8b"][
+        Math.floor(Math.random() * 4)
+      ],
+    }));
+
+    let frame = 0;
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      pieces.forEach((p) => {
+        p.x += p.vx;
+        p.y += p.vy;
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.x, p.y, p.r, p.r * 0.6);
+      });
+      frame += 1;
+      if (frame < 240) requestAnimationFrame(draw);
+      else ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+    draw();
+  }
+
+  function bindFinal() {
+    $("btn-final-close").addEventListener("click", () => {
+      $("final-screen").hidden = true;
+    });
+  }
+
+  function init() {
+    els.app = $("app");
+    loadDiscovered();
+
+    LocationPanel.init({
+      onFirstOpen: (id) => markDiscovered(id),
+      onClose: () => MapController.clearFocus(),
+    });
+
+    MapController.init({
+      onPinActivate: (loc) => {
+        LocationPanel.open(loc, state.discovered.has(loc.id));
+      },
+    });
+    MapController.setDiscovered(state.discovered);
+
+    $("progress-total").textContent = String(LOCATIONS.length);
+    $("progress-count").textContent = String(state.discovered.size);
+    $("progress-fill").style.width =
+      (state.discovered.size / LOCATIONS.length) * 100 + "%";
+
+    bindIntro();
+    bindFinal();
+    initGate();
+
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
