@@ -21,6 +21,9 @@ const ReelPanel = (function () {
       img.alt = block.caption || "";
       img.loading = "lazy";
       img.draggable = false;
+      img.onerror = () => {
+        item.innerHTML = '<span class="reel-item__missing">Photo soon</span>';
+      };
       item.appendChild(img);
       return item;
     }

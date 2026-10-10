@@ -103,14 +103,20 @@ const LOCATIONS = [
     name: "Marine Drive",
     lat: 18.944,
     lng: 72.8234,
+    presentation: "reel",
     content: [
       {
-        type: "story",
-        title: "Queen's Necklace",
-        date: "—",
-        text: "Evening walks along the curve.",
+        type: "snippet",
+        text: "I tell people I like bombay because it has water, but how do i tell them you're my water?",
       },
-      { type: "photo", src: "assets/marine-drive/1.svg", caption: "Marine Drive" },
+      { type: "photo", src: "assets/marine-drive/01.jpg", caption: "" },
+      { type: "video", src: "assets/marine-drive/01.mp4", poster: "assets/marine-drive/01.jpg" },
+      { type: "photo", src: "assets/marine-drive/02.jpg", caption: "" },
+      {
+        type: "snippet",
+        text: "I'd add alwin singing his marine drive song but you don't want to hear that",
+      },
+      { type: "video", src: "assets/marine-drive/02.mp4", poster: "assets/marine-drive/02.jpg" },
     ],
   },
   {
@@ -141,7 +147,23 @@ const LOCATIONS = [
     name: "Kala Ghoda",
     lat: 18.9285,
     lng: 72.8312,
-    content: [{ type: "snippet", text: "Art and cafés." }],
+    presentation: "reel",
+    content: [
+      {
+        type: "snippet",
+        text: "if i had a rice grain for everytime i missed you, i wouldn't need ration again",
+      },
+      { type: "photo", src: "assets/kala-ghoda/01.jpg", caption: "" },
+      { type: "video", src: "assets/kala-ghoda/01.mp4", poster: "assets/kala-ghoda/01.jpg" },
+      { type: "photo", src: "assets/kala-ghoda/02.jpg", caption: "" },
+      {
+        type: "snippet",
+        text: "its me and you and you and me, and your friend steve tududutudu",
+      },
+      { type: "photo", src: "assets/kala-ghoda/03.jpg", caption: "" },
+      { type: "video", src: "assets/kala-ghoda/02.mp4", poster: "assets/kala-ghoda/03.jpg" },
+      { type: "photo", src: "assets/kala-ghoda/04.jpg", caption: "" },
+    ],
   },
   {
     id: "colaba-causeway",
