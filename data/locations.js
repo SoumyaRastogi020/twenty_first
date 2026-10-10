@@ -80,7 +80,21 @@ const LOCATIONS = [
     name: "Lower Parel",
     lat: 18.9953,
     lng: 72.8306,
-    content: [{ type: "snippet", text: "Lower Parel — mills to malls." }],
+    presentation: "reel",
+    content: [
+      {
+        type: "snippet",
+        text: "Bunking classes and parties feels the same with you",
+      },
+      { type: "video", src: "assets/lower-parel/01.mp4", poster: "assets/lower-parel/01.jpg" },
+      { type: "photo", src: "assets/lower-parel/01.jpg", caption: "" },
+      { type: "photo", src: "assets/lower-parel/02.jpg", caption: "" },
+      {
+        type: "snippet",
+        text: "You don't know how important this view of the bridge was to me",
+      },
+      { type: "photo", src: "assets/lower-parel/03.jpg", caption: "" },
+    ],
   },
   {
     id: "mumbai-central",
@@ -222,9 +236,15 @@ const LOCATIONS = [
     name: "Mapro, Lonavla",
     lat: 18.748,
     lng: 73.405,
+    presentation: "reel",
     content: [
-      { type: "snippet", text: "Strawberry cream and misty hills." },
-      { type: "photo", src: "assets/mapro-lonavla/1.svg", caption: "" },
+      {
+        type: "snippet",
+        text: "who's sweeter- the dessert or you?\n.\n.\n(me)",
+      },
+      { type: "video", src: "assets/mapro-lonavla/01.mp4", poster: "assets/mapro-lonavla/01.jpg" },
+      { type: "photo", src: "assets/mapro-lonavla/01.jpg", caption: "" },
+      { type: "photo", src: "assets/mapro-lonavla/02.jpg", caption: "" },
     ],
   },
   {

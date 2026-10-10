@@ -825,6 +825,7 @@ video {
   line-height: 1.45;
   text-align: center;
   color: var(--text);
+  white-space: pre-line;
 }
 
 .reel-item--photo,
