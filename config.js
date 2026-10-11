@@ -41,11 +41,11 @@ const CONFIG = {
     "assets/intro/20.jpg",
   ],
 
-  /** Shown after every pin is discovered. */
+  /** Full-screen message after the last pin is opened (first time this visit). */
   FINAL_MESSAGE: {
-    title: "You found every place",
-    text:
-      "Replace this in config.js with your own closing note — something warm and very you.",
+    headline: "Congratulations on finding them all!",
+    birthday: "Happy 21st my fav <3",
+    closing: "here's to many more years of expanding this map together",
   },
 
   /** Leaflet map — requires internet for tiles */
@@ -69,8 +69,8 @@ const CONFIG = {
   MAP_ATTRIBUTION_SATELLITE:
     "Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community",
 
-  /** localStorage key for discovered pin ids */
-  STORAGE_KEY: "twenty_first_discovered_v1",
+  /** sessionStorage: discovered pin ids (resets when the gate is passed again) */
+  SESSION_DISCOVERED_KEY: "twenty_first_discovered_session",
   SESSION_GATE_KEY: "twenty_first_gate_ok",
 };
 

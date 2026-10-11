@@ -43,9 +43,14 @@
     }, Math.round(SCREEN_FADE_MS * 0.45));
   }
 
+  function progressSessionActive() {
+    return !CONFIG.GATE_ENABLED || gateSessionOk();
+  }
+
   function loadDiscovered() {
+    if (!progressSessionActive()) return;
     try {
-      const raw = localStorage.getItem(CONFIG.STORAGE_KEY);
+      const raw = sessionStorage.getItem(CONFIG.SESSION_DISCOVERED_KEY);
       if (raw) {
         JSON.parse(raw).forEach((id) => state.discovered.add(id));
       }
@@ -55,25 +60,32 @@
   }
 
   function saveDiscovered() {
+    if (!progressSessionActive()) return;
     try {
-      localStorage.setItem(
-        CONFIG.STORAGE_KEY,
+      sessionStorage.setItem(
+        CONFIG.SESSION_DISCOVERED_KEY,
         JSON.stringify([...state.discovered])
       );
     } catch (_) {}
+  }
+
+  /** Fresh visit after the gate — progress starts at 0. */
+  function resetSessionProgress() {
+    state.discovered = new Set();
+    try {
+      sessionStorage.removeItem(CONFIG.SESSION_DISCOVERED_KEY);
+    } catch (_) {}
+    MapController.setDiscovered(state.discovered);
+    updateProgress();
   }
 
   function updateProgress() {
     const total = LOCATIONS.length;
     const count = state.discovered.size;
     $("progress-count").textContent = String(count);
-    $("progress-total").textContent = String(total);
-    const pct = total ? (count / total) * 100 : 0;
+    const pct = total ? Math.round((count / total) * 100) : 0;
+    $("progress-pct").textContent = String(pct);
     $("progress-fill").style.width = pct + "%";
-
-    if (count >= total && total > 0 && state.introComplete) {
-      showCelebration();
-    }
   }
 
   function markDiscovered(id) {
@@ -82,6 +94,16 @@
     saveDiscovered();
     MapController.setDiscovered(state.discovered);
     updateProgress();
+
+    const total = LOCATIONS.length;
+    if (
+      state.introComplete &&
+      total > 0 &&
+      state.discovered.size >= total &&
+      $("final-screen").dataset.shown !== "1"
+    ) {
+      setTimeout(showCelebration, 700);
+    }
   }
 
   /* --- Gate (soft only — hash is in source; not real security) --- */
@@ -128,6 +150,7 @@
       const guess = (input.value || "").trim().toLowerCase();
       const hash = await sha256Hex(guess);
       if (hash === CONFIG.GATE_PASSWORD_SHA256) {
+        resetSessionProgress();
         setGateSessionOk();
         crossfadeScreen(screen, $("intro-tap-screen"));
       } else {
@@ -171,8 +194,7 @@
     });
 
     btnContinue.addEventListener("click", startFlash);
-    $("skip-intro").addEventListener("click", (e) => {
-      e.preventDefault();
+    $("skip-intro").addEventListener("click", () => {
       skipToMap();
     });
 
@@ -217,21 +239,41 @@
     function finishIntro(opts) {
       const animateView = !opts || opts.animateView !== false;
       state.introComplete = true;
-      disperseScreen.hidden = true;
-      tapScreen.hidden = true;
-      msgScreen.hidden = true;
-      flashScreen.hidden = true;
+      hideAllOverlayScreens();
       $("app").hidden = false;
       MapController.onIntroComplete(animateView);
       updateProgress();
     }
 
-    function skipToMap() {
-      [tapScreen, msgScreen, flashScreen, disperseScreen].forEach((el) => {
+    function hideAllOverlayScreens() {
+      [
+        "gate-screen",
+        "intro-tap-screen",
+        "intro-message-screen",
+        "intro-flash-screen",
+        "disperse-screen",
+      ].forEach((id) => {
+        const el = $(id);
+        if (!el) return;
+        el.classList.remove("is-active");
         el.hidden = true;
       });
+      const disperseCards = $("disperse-cards");
+      if (disperseCards) disperseCards.innerHTML = "";
+      $("flash-frame").hidden = true;
+      $("flash-loading").hidden = true;
+      $("app").classList.remove("is-intro-reveal");
+    }
+
+    function skipToMap() {
+      hideAllOverlayScreens();
       $("app").hidden = false;
-      finishIntro({ animateView: true });
+      /* Leaflet needs a laid-out #app before ensureMap / invalidateSize */
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          finishIntro({ animateView: true });
+        });
+      });
     }
 
     window.__skipToMap = skipToMap;
@@ -240,9 +282,19 @@
   function showCelebration() {
     if ($("final-screen").dataset.shown === "1") return;
     $("final-screen").dataset.shown = "1";
-    $("final-title").textContent = CONFIG.FINAL_MESSAGE.title;
-    $("final-text").textContent = CONFIG.FINAL_MESSAGE.text;
-    $("final-screen").hidden = false;
+    const msg = CONFIG.FINAL_MESSAGE;
+    $("final-line-headline").textContent = msg.headline;
+    $("final-line-birthday").textContent = msg.birthday;
+    $("final-line-closing").textContent = msg.closing;
+    if (LocationPanel.isOpen && LocationPanel.isOpen()) {
+      LocationPanel.close();
+    }
+    const screen = $("final-screen");
+    screen.hidden = false;
+    screen.classList.remove("is-active");
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => screen.classList.add("is-active"));
+    });
     runConfetti();
   }
 
@@ -283,7 +335,11 @@
 
   function bindFinal() {
     $("btn-final-close").addEventListener("click", () => {
-      $("final-screen").hidden = true;
+      const screen = $("final-screen");
+      screen.classList.remove("is-active");
+      setTimeout(() => {
+        screen.hidden = true;
+      }, SCREEN_FADE_MS);
     });
   }
 
@@ -303,10 +359,7 @@
     });
     MapController.setDiscovered(state.discovered);
 
-    $("progress-total").textContent = String(LOCATIONS.length);
-    $("progress-count").textContent = String(state.discovered.size);
-    $("progress-fill").style.width =
-      (state.discovered.size / LOCATIONS.length) * 100 + "%";
+    updateProgress();
 
     bindIntro();
     bindFinal();

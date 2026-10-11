@@ -10,6 +10,12 @@ const MapController = (function () {
   let fullTripBounds = null;
   let southMumbaiBounds = null;
   let focusedPinId = null;
+  let trainLayer = null;
+  let trainAnimMarker = null;
+  let trainAnimRaf = null;
+  let trainAnimStart = null;
+
+  const TRAIN_LOOP_MS = 95000;
 
   const SOUTH_MUMBAI_IDS = [
     "charni-road",
@@ -24,12 +30,16 @@ const MapController = (function () {
   function createPinIcon(isDiscovered) {
     return L.divIcon({
       className: "leaflet-pin-icon",
-      html: `<span class="pin-hit"><span class="pin-dot${
-        isDiscovered ? " is-discovered" : ""
-      }"></span></span>`,
-      iconSize: [44, 44],
-      iconAnchor: [22, 40],
+      html: `<span class="pin-hit"><span class="map-pushpin${
+        isDiscovered ? " is-explored" : ""
+      }" aria-hidden="true">📍</span></span>`,
+      iconSize: [40, 40],
+      iconAnchor: [20, 36],
     });
+  }
+
+  function iconForLocation(loc, isDiscovered) {
+    return createPinIcon(isDiscovered);
   }
 
   function createClusterIcon(cluster) {
@@ -50,6 +60,82 @@ const MapController = (function () {
 
   function buildBounds(latLngs) {
     return L.latLngBounds(latLngs);
+  }
+
+  /** Position at fraction t (0–1) along a polyline by distance. */
+  function pointAlongLine(latlngs, t) {
+    if (latlngs.length === 1) return latlngs[0];
+    const segLens = [];
+    let total = 0;
+    for (let i = 1; i < latlngs.length; i++) {
+      const d = latlngs[i - 1].distanceTo(latlngs[i]);
+      segLens.push(d);
+      total += d;
+    }
+    if (total === 0) return latlngs[0];
+    let dist = t * total;
+    for (let i = 0; i < segLens.length; i++) {
+      if (dist <= segLens[i]) {
+        const f = dist / segLens[i];
+        const a = latlngs[i];
+        const b = latlngs[i + 1];
+        return L.latLng(
+          a.lat + (b.lat - a.lat) * f,
+          a.lng + (b.lng - a.lng) * f
+        );
+      }
+      dist -= segLens[i];
+    }
+    return latlngs[latlngs.length - 1];
+  }
+
+  function setupTrainAnimation(trainLine) {
+    if (!map || trainLayer) return;
+
+    const reduced =
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    const latlngs = trainLine.map(([lat, lng]) => L.latLng(lat, lng));
+    trainLayer = L.layerGroup().addTo(map);
+
+    L.polyline(latlngs, {
+      color: "#6a5a48",
+      weight: 3,
+      opacity: 0.55,
+      dashArray: "8 10",
+      lineCap: "round",
+      className: "train-route-line",
+    }).addTo(trainLayer);
+
+    const trainIcon = L.divIcon({
+      className: "train-marker-icon",
+      html: '<span class="train-glyph" aria-hidden="true">🚆</span>',
+      iconSize: [32, 32],
+      iconAnchor: [16, 16],
+    });
+
+    trainAnimMarker = L.marker(latlngs[0], {
+      icon: trainIcon,
+      interactive: false,
+      zIndexOffset: 800,
+    }).addTo(trainLayer);
+
+    if (reduced) {
+      trainAnimMarker.setLatLng(pointAlongLine(latlngs, 0.5));
+      return;
+    }
+
+    trainAnimStart = null;
+    function tick(ts) {
+      if (!map || !trainAnimMarker) return;
+      if (trainAnimStart === null) trainAnimStart = ts;
+      const elapsed = (ts - trainAnimStart) % TRAIN_LOOP_MS;
+      const t = elapsed / TRAIN_LOOP_MS;
+      trainAnimMarker.setLatLng(pointAlongLine(latlngs, t));
+      trainAnimRaf = requestAnimationFrame(tick);
+    }
+    trainAnimRaf = requestAnimationFrame(tick);
   }
 
   function ensureMap() {
@@ -99,7 +185,7 @@ const MapController = (function () {
     LOCATIONS.forEach((loc) => {
       const isDisc = discovered.has(loc.id);
       const marker = L.marker([loc.lat, loc.lng], {
-        icon: createPinIcon(isDisc),
+        icon: iconForLocation(loc, isDisc),
         alt: loc.name,
       });
       marker._locId = loc.id;
@@ -125,6 +211,9 @@ const MapController = (function () {
     });
 
     map.addLayer(clusterGroup);
+
+    const trainLoc = LOCATIONS.find((l) => l.trainLine && l.trainLine.length >= 2);
+    if (trainLoc) setupTrainAnimation(trainLoc.trainLine);
 
     const allLatLngs = LOCATIONS.map((l) => [l.lat, l.lng]);
     fullTripBounds = buildBounds(allLatLngs);
@@ -152,14 +241,6 @@ const MapController = (function () {
   function bindCustomControls() {
     document.getElementById("btn-reset-view").addEventListener("click", () => {
       flyToFullTrip();
-    });
-    document.getElementById("btn-south-mumbai").addEventListener("click", () => {
-      if (!map || !southMumbaiBounds) return;
-      map.flyToBounds(southMumbaiBounds, {
-        padding: CONFIG.MAP_FIT_PADDING,
-        duration: 1.2,
-        maxZoom: 15,
-      });
     });
     const zoomIn = document.getElementById("btn-zoom-in");
     const zoomOut = document.getElementById("btn-zoom-out");
@@ -248,7 +329,7 @@ const MapController = (function () {
     markersById.forEach((marker, id) => {
       const isDisc = discovered.has(id);
       marker._discovered = isDisc;
-      marker.setIcon(createPinIcon(isDisc));
+      marker.setIcon(iconForLocation(marker._loc, isDisc));
     });
     if (clusterGroup) clusterGroup.refreshClusters();
     updatePermanentTooltips();
@@ -272,10 +353,15 @@ const MapController = (function () {
   /** After intro (or skip): size map and optionally fly to full trip. */
   function onIntroComplete(animateView) {
     ensureMap();
-    map.invalidateSize();
+    map.invalidateSize({ pan: false });
     if (animateView) flyToFullTrip();
     else fitFullTrip(false);
     updatePermanentTooltips();
+    requestAnimationFrame(() => {
+      if (!map) return;
+      map.invalidateSize({ pan: false });
+      if (fullTripBounds && !animateView) fitFullTrip(false);
+    });
   }
 
   return {

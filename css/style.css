@@ -114,9 +114,21 @@ video {
   position: absolute;
   bottom: calc(1rem + var(--safe-bottom));
   right: 1rem;
+  margin: 0;
+  padding: 0.5rem 0.65rem;
+  border: none;
+  background: transparent;
+  font: inherit;
   font-size: 0.75rem;
   color: var(--text-muted);
   opacity: 0.6;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.skip-intro:hover {
+  opacity: 0.85;
 }
 
 /* Gate */
@@ -483,6 +495,123 @@ video {
   filter: var(--map-tile-filter);
 }
 
+.train-route-line {
+  pointer-events: none;
+}
+
+.train-marker-icon {
+  background: transparent;
+  border: none;
+}
+
+.train-glyph {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  font-size: 1.35rem;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.45));
+  transform: rotate(-90deg);
+}
+
+.pin-hit--station {
+  width: 48px;
+  height: 52px;
+}
+
+.station-pin {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 44px;
+  filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.45));
+  animation: station-pulse 2.4s ease-in-out infinite;
+}
+
+.station-pin.is-discovered {
+  animation: none;
+}
+
+.station-roof {
+  width: 40px;
+  height: 8px;
+  border-radius: 4px 4px 0 0;
+  background: repeating-linear-gradient(
+    -45deg,
+    #c45c3e,
+    #c45c3e 4px,
+    #e8dcc8 4px,
+    #e8dcc8 8px
+  );
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 0 0 12px rgba(255, 107, 107, 0.45);
+}
+
+.station-body {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 22px;
+  background: linear-gradient(180deg, #4a5568 0%, #2d3748 100%);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+}
+
+.station-train {
+  font-size: 0.95rem;
+  line-height: 1;
+  transform: scaleX(-1);
+}
+
+.station-platform {
+  width: 42px;
+  height: 5px;
+  margin-top: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #8b7355, #a89070, #8b7355);
+  border: 1px solid rgba(0, 0, 0, 0.25);
+}
+
+.station-pin.is-discovered .station-roof {
+  background: repeating-linear-gradient(
+    -45deg,
+    #5a9a82,
+    #5a9a82 4px,
+    #c8e8dc 4px,
+    #c8e8dc 8px
+  );
+  box-shadow: 0 0 10px rgba(126, 196, 168, 0.5);
+}
+
+.station-pin.is-discovered .station-body {
+  background: linear-gradient(180deg, #3d5248 0%, #2a3d34 100%);
+}
+
+.station-pin.is-discovered .station-body::after {
+  content: "✓";
+  position: absolute;
+  top: 14px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--mint);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+@keyframes station-pulse {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-3px) scale(1.04);
+  }
+}
+
 .leaflet-pin-icon {
   background: transparent;
   border: none;
@@ -496,45 +625,19 @@ video {
   height: 44px;
 }
 
-.pin-dot {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: var(--coral);
-  box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.35), 0 0 16px rgba(255, 107, 107, 0.6);
-  animation: pin-pulse 2s ease-in-out infinite;
-  position: relative;
-}
-
-.pin-dot::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  bottom: -6px;
-  width: 2px;
-  height: 8px;
-  margin-left: -1px;
-  background: rgba(255, 255, 255, 0.5);
-  border-radius: 1px;
-}
-
-.pin-dot.is-discovered {
-  background: var(--mint);
-  box-shadow: 0 0 0 3px rgba(126, 196, 168, 0.35);
-  animation: none;
-}
-
-.pin-dot.is-discovered::before {
-  content: "✓";
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 9px;
-  font-weight: 700;
-  color: #1a3028;
+.map-pushpin {
+  display: block;
+  font-size: 2rem;
   line-height: 1;
+  transform: translateY(-2px);
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.45));
+  animation: pin-pulse 2.2s ease-in-out infinite;
+}
+
+.map-pushpin.is-explored {
+  filter: hue-rotate(95deg) saturate(1.35) brightness(1.05)
+    drop-shadow(0 3px 6px rgba(0, 0, 0, 0.4));
+  animation: none;
 }
 
 @keyframes pin-pulse {
@@ -1004,29 +1107,82 @@ video {
 /* Final celebration */
 .screen--final {
   z-index: 120;
-  background: rgba(26, 21, 32, 0.85);
+  padding: 2rem 1.75rem;
+  background: rgba(8, 6, 12, 0.78);
+  backdrop-filter: blur(10px);
+  justify-content: center;
 }
 
-.final-card {
+.final-message {
   position: relative;
   z-index: 2;
-  max-width: 28rem;
-  padding: 2rem;
+  max-width: 24rem;
+  margin: 0;
   text-align: center;
-  background: var(--bg-card);
-  border-radius: 1.25rem;
-  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  opacity: 0;
+  transform: translateY(12px) scale(0.98);
+  transition:
+    opacity 1.1s cubic-bezier(0.33, 1, 0.38, 1),
+    transform 1.1s cubic-bezier(0.33, 1, 0.38, 1);
 }
 
-.final-title {
-  font-family: var(--serif);
-  font-size: 2rem;
-  margin: 0 0 1rem;
+.screen--final.is-active .final-message {
+  opacity: 1;
+  transform: translateY(0) scale(1);
 }
 
-.final-text {
-  margin: 0 0 1.5rem;
-  line-height: 1.6;
+.final-line {
+  margin: 0;
+}
+
+.final-line--headline,
+.final-line--birthday {
+  font-family: "Pacifico", "Comic Sans MS", cursive;
+  line-height: 1.4;
+  text-shadow: none;
+}
+
+.final-line--headline {
+  font-size: clamp(1.25rem, 5vw, 1.65rem);
+  color: #ffc8ad;
+}
+
+.final-line--birthday {
+  font-size: clamp(1.85rem, 7.5vw, 2.5rem);
+  color: #ffd4bc;
+}
+
+.final-line--closing {
+  margin-top: 0.5rem;
+  font-family: var(--sans);
+  font-size: clamp(0.85rem, 3.2vw, 0.95rem);
+  font-weight: 400;
+  line-height: 1.55;
+  letter-spacing: 0.01em;
+  color: rgba(232, 210, 195, 0.88);
+  text-shadow: none;
+  max-width: 18rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.final-dismiss {
+  position: absolute;
+  top: calc(0.75rem + var(--safe-top));
+  right: calc(0.75rem + env(safe-area-inset-right, 0px));
+  z-index: 3;
+  width: var(--tap-min);
+  height: var(--tap-min);
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 210, 185, 0.9);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
 }
 
 .confetti-canvas {

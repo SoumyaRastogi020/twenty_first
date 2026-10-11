@@ -8,23 +8,52 @@
  */
 const LOCATIONS = [
   {
-    id: "dahisar",
-    name: "Dahisar",
-    lat: 19.2502,
-    lng: 72.8596,
-    content: [
-      { type: "story", title: "Dahisar", date: "—", text: "Your story here." },
-      { type: "photo", src: "assets/dahisar/1.svg", caption: "Placeholder photo" },
-    ],
-  },
-  {
     id: "borivali",
     name: "Borivali",
     lat: 19.2307,
     lng: 72.8567,
+    presentation: "reel",
     content: [
-      { type: "snippet", text: "A little note about Borivali." },
-      { type: "photo", src: "assets/borivali/1.svg", caption: "" },
+      {
+        type: "snippet",
+        text: "home sweet home but sweeter when you're there too",
+      },
+      { type: "photo", src: "assets/borivali/01.jpg", caption: "" },
+      { type: "photo", src: "assets/borivali/02.jpg", caption: "" },
+      { type: "snippet", text: "rummy lessons pending" },
+      { type: "photo", src: "assets/borivali/03.jpg", caption: "" },
+      { type: "video", src: "assets/borivali/01.mp4", poster: "assets/borivali/03.jpg" },
+      { type: "video", src: "assets/borivali/02.mp4", poster: "assets/borivali/03.jpg" },
+    ],
+  },
+  {
+    id: "local-train-rides",
+    name: "Local train rides",
+    pinStyle: "train-station",
+    lat: 19.118,
+    lng: 72.8485,
+    presentation: "reel",
+    /** Stylized western line: Xavier's → Borivali (map animation in map.js) */
+    trainLine: [
+      [18.9433, 72.832],
+      [18.969, 72.8205],
+      [19.0544, 72.8402],
+      [19.1364, 72.849],
+      [19.2307, 72.8567],
+    ],
+    content: [
+      {
+        type: "snippet",
+        text: "the best stories, and the least evidence",
+      },
+      { type: "photo", src: "assets/local-train-rides/01.jpg", caption: "" },
+      {
+        type: "video",
+        src: "assets/local-train-rides/01.mp4",
+        poster: "assets/local-train-rides/01.jpg",
+      },
+      { type: "photo", src: "assets/local-train-rides/02.jpg", caption: "" },
+      { type: "photo", src: "assets/local-train-rides/03.jpg", caption: "" },
     ],
   },
   {
@@ -32,14 +61,14 @@ const LOCATIONS = [
     name: "Sanjay Gandhi National Park",
     lat: 19.2147,
     lng: 72.9106,
+    presentation: "reel",
     content: [
       {
-        type: "story",
-        title: "SGNP",
-        date: "—",
-        text: "Green escape — add your memory.",
+        type: "snippet",
+        text: "if its with you, i'd say yes to everything",
       },
-      { type: "photo", src: "assets/sgnp/1.svg", caption: "Trail day" },
+      { type: "photo", src: "assets/sgnp/01.jpg", caption: "" },
+      { type: "video", src: "assets/sgnp/01.mp4", poster: "assets/sgnp/01.jpg" },
     ],
   },
   {
@@ -47,15 +76,37 @@ const LOCATIONS = [
     name: "Jogeshwari",
     lat: 19.1364,
     lng: 72.849,
-    content: [{ type: "snippet", text: "Jogeshwari moment." }],
+    presentation: "reel",
+    content: [
+      { type: "snippet", text: "…" },
+      {
+        type: "video",
+        src: "assets/jogeshwari/01.mp4",
+        poster: "assets/jogeshwari/01.jpg",
+      },
+      { type: "photo", src: "assets/jogeshwari/01.jpg", caption: "" },
+      {
+        type: "video",
+        src: "assets/jogeshwari/02.mp4",
+        poster: "assets/jogeshwari/01.jpg",
+      },
+    ],
   },
   {
     id: "santacruz-metro",
     name: "Santacruz Metro Station",
     lat: 19.082,
     lng: 72.842,
+    presentation: "reel",
     content: [
-      { type: "story", title: "Metro", date: "—", text: "Commute stories." },
+      { type: "snippet", text: "where it all began..." },
+      { type: "photo", src: "assets/santacruz-metro/01.jpg", caption: "" },
+      {
+        type: "video",
+        src: "assets/santacruz-metro/01.mp4",
+        poster: "assets/santacruz-metro/01.jpg",
+      },
+      { type: "photo", src: "assets/santacruz-metro/02.jpg", caption: "" },
     ],
   },
   {
@@ -63,16 +114,26 @@ const LOCATIONS = [
     name: "Khar",
     lat: 19.0714,
     lng: 72.8396,
-    content: [{ type: "photo", src: "assets/khar/1.svg", caption: "Khar" }],
+    presentation: "reel",
+    content: [
+      { type: "snippet", text: "…" },
+      { type: "video", src: "assets/khar/01.mp4", poster: "assets/khar/01.jpg" },
+      { type: "photo", src: "assets/khar/01.jpg", caption: "" },
+      { type: "photo", src: "assets/khar/02.jpg", caption: "" },
+      { type: "photo", src: "assets/khar/03.jpg", caption: "" },
+      { type: "photo", src: "assets/khar/04.jpg", caption: "" },
+    ],
   },
   {
     id: "bandra",
     name: "Bandra",
     lat: 19.0544,
     lng: 72.8402,
+    presentation: "reel",
     content: [
-      { type: "story", title: "Bandra", date: "—", text: "Sea link views and lanes." },
-      { type: "photo", src: "assets/bandra/1.svg", caption: "" },
+      { type: "snippet", text: "…" },
+      { type: "video", src: "assets/bandra/01.mp4" },
+      { type: "video", src: "assets/bandra/02.mp4" },
     ],
   },
   {
@@ -101,8 +162,16 @@ const LOCATIONS = [
     name: "Mumbai Central",
     lat: 18.969,
     lng: 72.8205,
+    presentation: "reel",
     content: [
-      { type: "photo", src: "assets/mumbai-central/1.svg", caption: "Station" },
+      { type: "photo", src: "assets/mumbai-central/01.jpg", caption: "" },
+      {
+        type: "snippet",
+        text: "won't talk to people in our class but always ready to talk to auto bhaiya??",
+      },
+      { type: "photo", src: "assets/mumbai-central/02.jpg", caption: "" },
+      { type: "photo", src: "assets/mumbai-central/03.jpg", caption: "" },
+      { type: "photo", src: "assets/mumbai-central/04.jpg", caption: "" },
     ],
   },
   {
@@ -110,7 +179,19 @@ const LOCATIONS = [
     name: "Charni Road",
     lat: 18.9524,
     lng: 72.823,
-    content: [{ type: "story", title: "Charni Road", date: "—", text: "..." }],
+    presentation: "reel",
+    content: [
+      { type: "snippet", text: "…" },
+      {
+        type: "video",
+        src: "assets/charni-road/01.mp4",
+        poster: "assets/charni-road/01.jpg",
+      },
+      { type: "photo", src: "assets/charni-road/01.jpg", caption: "" },
+      { type: "photo", src: "assets/charni-road/02.jpg", caption: "" },
+      { type: "photo", src: "assets/charni-road/03.jpg", caption: "" },
+      { type: "snippet", text: "…" },
+    ],
   },
   {
     id: "marine-drive",
@@ -138,15 +219,41 @@ const LOCATIONS = [
     name: "Crawford Market",
     lat: 18.9473,
     lng: 72.8342,
-    content: [{ type: "snippet", text: "Chaos and colour." }],
+    presentation: "reel",
+    content: [
+      { type: "photo", src: "assets/crawford-market/01.jpg", caption: "" },
+      { type: "photo", src: "assets/crawford-market/02.jpg", caption: "" },
+      { type: "photo", src: "assets/crawford-market/03.jpg", caption: "" },
+      {
+        type: "snippet",
+        text: "our steve takes good photos sometimes",
+      },
+    ],
   },
   {
     id: "xaviers-college",
     name: "St. Xavier's College",
     lat: 18.9433,
     lng: 72.832,
+    presentation: "reel",
     content: [
-      { type: "story", title: "Xavier's", date: "—", text: "Campus memories." },
+      { type: "snippet", text: "…" },
+      {
+        type: "video",
+        src: "assets/xaviers-college/01.mp4",
+        poster: "assets/xaviers-college/01.jpg",
+      },
+      { type: "photo", src: "assets/xaviers-college/01.jpg", caption: "" },
+      { type: "photo", src: "assets/xaviers-college/02.jpg", caption: "" },
+      {
+        type: "video",
+        src: "assets/xaviers-college/02.mp4",
+        poster: "assets/xaviers-college/02.jpg",
+      },
+      { type: "photo", src: "assets/xaviers-college/03.jpg", caption: "" },
+      { type: "photo", src: "assets/xaviers-college/04.jpg", caption: "" },
+      { type: "photo", src: "assets/xaviers-college/05.jpg", caption: "" },
+      { type: "snippet", text: "…" },
     ],
   },
   {
@@ -154,7 +261,15 @@ const LOCATIONS = [
     name: "Fort",
     lat: 18.934,
     lng: 72.835,
-    content: [{ type: "photo", src: "assets/fort/1.svg", caption: "Fort" }],
+    presentation: "reel",
+    content: [
+      { type: "snippet", text: "…" },
+      { type: "video", src: "assets/fort/01.mp4", poster: "assets/fort/01.jpg" },
+      { type: "photo", src: "assets/fort/01.jpg", caption: "" },
+      { type: "photo", src: "assets/fort/02.jpg", caption: "" },
+      { type: "video", src: "assets/fort/02.mp4", poster: "assets/fort/02.jpg" },
+      { type: "snippet", text: "…" },
+    ],
   },
   {
     id: "kala-ghoda",
@@ -184,27 +299,11 @@ const LOCATIONS = [
     name: "Colaba Causeway",
     lat: 18.9158,
     lng: 72.826,
+    presentation: "reel",
     content: [
-      {
-        type: "story",
-        title: "Causeway",
-        date: "—",
-        text: "Shopping and street food.",
-      },
-      { type: "photo", src: "assets/colaba-causeway/1.svg", caption: "" },
-    ],
-  },
-  {
-    id: "dy-patil-stadium",
-    name: "DY Patil Stadium, Navi Mumbai",
-    lat: 19.0433,
-    lng: 73.0262,
-    content: [
-      {
-        type: "video",
-        src: "assets/dy-patil-stadium/clip1.mp4",
-        poster: "assets/dy-patil-stadium/clip1.svg",
-      },
+      { type: "photo", src: "assets/colaba-causeway/01.jpg", caption: "" },
+      { type: "snippet", text: "…" },
+      { type: "photo", src: "assets/colaba-causeway/02.jpg", caption: "" },
     ],
   },
   {
@@ -229,7 +328,15 @@ const LOCATIONS = [
     name: "Imagica",
     lat: 18.8003,
     lng: 73.2745,
-    content: [{ type: "photo", src: "assets/imagica/1.svg", caption: "Imagica day" }],
+    presentation: "reel",
+    content: [
+      {
+        type: "snippet",
+        text: "everything is magical when its with you",
+      },
+      { type: "photo", src: "assets/imagica/01.jpg", caption: "" },
+      { type: "photo", src: "assets/imagica/02.jpg", caption: "" },
+    ],
   },
   {
     id: "mapro-lonavla",
@@ -252,8 +359,16 @@ const LOCATIONS = [
     name: "Pune",
     lat: 18.5204,
     lng: 73.8567,
+    presentation: "reel",
     content: [
-      { type: "story", title: "Pune", date: "—", text: "Weekend city." },
+      {
+        type: "snippet",
+        text: "one of the few successful trips you've had with friends?",
+      },
+      { type: "photo", src: "assets/pune/01.jpg", caption: "" },
+      { type: "video", src: "assets/pune/01.mp4", poster: "assets/pune/01.jpg" },
+      { type: "photo", src: "assets/pune/02.jpg", caption: "" },
+      { type: "photo", src: "assets/pune/03.jpg", caption: "" },
     ],
   },
   {
@@ -261,6 +376,21 @@ const LOCATIONS = [
     name: "Nashik",
     lat: 19.9975,
     lng: 73.7898,
-    content: [{ type: "photo", src: "assets/nashik/1.svg", caption: "Nashik" }],
+    presentation: "reel",
+    content: [
+      {
+        type: "snippet",
+        text: "idek how we have so much to talk about, but cheers to always being next to you",
+      },
+      { type: "photo", src: "assets/nashik/01.jpg", caption: "" },
+      { type: "video", src: "assets/nashik/01.mp4", poster: "assets/nashik/01.jpg" },
+      {
+        type: "snippet",
+        text: "you will be the wine aunt to my kids",
+      },
+      { type: "photo", src: "assets/nashik/02.jpg", caption: "" },
+      { type: "video", src: "assets/nashik/02.mp4", poster: "assets/nashik/02.jpg" },
+      { type: "photo", src: "assets/nashik/03.jpg", caption: "" },
+    ],
   },
 ];
