@@ -16,6 +16,13 @@ function Copy-IfExists($src, $dst) {
   }
 }
 
+# Intro flash + disperse grid (photo1 (1).jpg … photo1 (20).jpg)
+$introSrc = Join-Path $base "start up photographs"
+1..20 | ForEach-Object {
+  $n = "{0:D2}" -f $_
+  Copy-IfExists (Join-Path $introSrc "photo1 ($_).jpg") (Join-Path $proj "intro\$n.jpg")
+}
+
 # Ulwe  -> assets/ulwe/01.jpg, 01.mp4, ...
 Copy-IfExists "$base\ulwe\ulwe (1).jpg" "$proj\ulwe\01.jpg"
 Copy-IfExists "$base\ulwe\ulwe (1).mp4" "$proj\ulwe\01.mp4"

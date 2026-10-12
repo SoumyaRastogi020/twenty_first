@@ -4,7 +4,24 @@
 const IntroFlow = (function () {
   const FLASH_MS = 200;
   const GRID_HOLD_MS = 1100;
+  const GRID_HOLD_LITE_MS = 750;
   const FLY_MS = 2000;
+  const FLY_MS_MOBILE = 1400;
+  const FADE_LITE_MS = 900;
+
+  function useLiteDisperse() {
+    const mode =
+      typeof CONFIG !== "undefined" && CONFIG.INTRO_DISPERSE
+        ? CONFIG.INTRO_DISPERSE
+        : "auto";
+    if (mode === "lite") return true;
+    if (mode === "full") return false;
+    return (
+      typeof window !== "undefined" &&
+      (window.matchMedia("(max-width: 899px)").matches ||
+        window.matchMedia("(pointer: coarse)").matches)
+    );
+  }
 
   function preloadImages(urls) {
     return Promise.all(
@@ -12,11 +29,28 @@ const IntroFlow = (function () {
         (src) =>
           new Promise((resolve) => {
             const img = new Image();
+            img.decoding = "async";
             img.onload = () => resolve({ src, ok: true });
             img.onerror = () => resolve({ src, ok: false });
             img.src = src;
           })
       )
+    );
+  }
+
+  function decodeCardImages(cards) {
+    return Promise.all(
+      cards.map(({ el }) => {
+        const img = el.querySelector("img");
+        if (!img) return Promise.resolve();
+        const done = () =>
+          img.decode ? img.decode().catch(() => {}) : Promise.resolve();
+        if (img.complete && img.naturalWidth > 0) return done();
+        return new Promise((resolve) => {
+          img.onload = () => done().then(resolve);
+          img.onerror = resolve;
+        });
+      })
     );
   }
 
@@ -80,6 +114,16 @@ const IntroFlow = (function () {
     });
   }
 
+  /** Fade grid out — lighter than flying 20 polaroids (better on mobile). */
+  function runDisperseLite(container, backdrop, grid, onComplete) {
+    backdrop.classList.add("is-clear");
+    grid.classList.add("is-dispersing-lite");
+    setTimeout(() => {
+      container.innerHTML = "";
+      onComplete();
+    }, FADE_LITE_MS);
+  }
+
   /**
    * Show all photos in a grid, then fly each one toward map pin positions (visible shrink).
    */
@@ -95,6 +139,8 @@ const IntroFlow = (function () {
       return;
     }
 
+    const lite = useLiteDisperse();
+
     const backdrop = document.createElement("div");
     backdrop.className = "intro-grid-backdrop";
     container.appendChild(backdrop);
@@ -108,6 +154,7 @@ const IntroFlow = (function () {
       const el = document.createElement("div");
       el.className = "polaroid polaroid--in-grid";
       const img = document.createElement("img");
+      img.decoding = "async";
       img.src = src;
       img.alt = "";
       el.appendChild(img);
@@ -115,13 +162,24 @@ const IntroFlow = (function () {
       return { el, i };
     });
 
-    if (reduced) {
+    if (reduced || lite) {
+      const hold = lite ? GRID_HOLD_LITE_MS : 400;
       setTimeout(() => {
-        container.innerHTML = "";
-        onComplete();
-      }, 400);
+        if (reduced) {
+          container.innerHTML = "";
+          onComplete();
+          return;
+        }
+        runDisperseLite(container, backdrop, grid, onComplete);
+      }, hold);
       return;
     }
+
+    const flyMs =
+      typeof window !== "undefined" &&
+      window.matchMedia("(max-width: 899px)").matches
+        ? FLY_MS_MOBILE
+        : FLY_MS;
 
     function startFlyPhase() {
       backdrop.classList.add("is-clear");
@@ -154,11 +212,12 @@ const IntroFlow = (function () {
 
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-          cards.forEach(({ el, i }) => {
+          cards.forEach(({ el, i }, idx) => {
             const target = getTargetForIndex
               ? getTargetForIndex(i)
               : { tx: 0, ty: 0 };
             const rot = (Math.random() - 0.5) * 20;
+            el.style.transitionDelay = idx * 35 + "ms";
             el.classList.add("is-flying");
             el.style.transform = `translate(calc(-50% + ${target.tx}px), calc(-50% + ${target.ty}px)) rotate(${rot}deg) scale(0.06)`;
             el.style.opacity = "0.35";
@@ -167,11 +226,14 @@ const IntroFlow = (function () {
       });
     }
 
-    setTimeout(startFlyPhase, GRID_HOLD_MS);
+    setTimeout(() => {
+      decodeCardImages(cards).then(startFlyPhase);
+    }, GRID_HOLD_MS);
+
     setTimeout(() => {
       container.innerHTML = "";
       onComplete();
-    }, GRID_HOLD_MS + FLY_MS);
+    }, GRID_HOLD_MS + flyMs + cards.length * 35);
   }
 
   return {

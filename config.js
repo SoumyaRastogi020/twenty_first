@@ -41,6 +41,12 @@ const CONFIG = {
     "assets/intro/20.jpg",
   ],
 
+  /**
+   * Intro grid → map handoff. "auto" = fade on phones (smoother); "lite" = always fade;
+   * "full" = always fly polaroids to pins (heavier on mobile).
+   */
+  INTRO_DISPERSE: "auto",
+
   /** Full-screen message after the last pin is opened (first time this visit). */
   FINAL_MESSAGE: {
     headline: "Congratulations on finding them all!",
