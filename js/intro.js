@@ -7,19 +7,27 @@ const IntroFlow = (function () {
   const FLY_MS = 2000;
   const FLY_MS_MOBILE = 1400;
 
-  function preloadImages(urls) {
-    return Promise.all(
-      urls.map(
-        (src) =>
-          new Promise((resolve) => {
-            const img = new Image();
-            img.decoding = "async";
-            img.onload = () => resolve({ src, ok: true });
-            img.onerror = () => resolve({ src, ok: false });
-            img.src = src;
-          })
-      )
-    );
+  const PRELOAD_BATCH = 6;
+
+  function preloadOne(src) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.decoding = "async";
+      img.onload = () => resolve({ src, ok: true });
+      img.onerror = () => resolve({ src, ok: false });
+      img.src = src;
+    });
+  }
+
+  /** Load intro frames in batches (easier on slow connections than 20 at once). */
+  async function preloadImages(urls) {
+    const results = [];
+    for (let i = 0; i < urls.length; i += PRELOAD_BATCH) {
+      const batch = urls.slice(i, i + PRELOAD_BATCH);
+      const batchResults = await Promise.all(batch.map(preloadOne));
+      results.push(...batchResults);
+    }
+    return results;
   }
 
   function decodeCardImages(cards) {

@@ -118,6 +118,14 @@ Paste into `GATE_PASSWORD_SHA256`. Unlock persists for the **session** via `sess
 
 Paths in `CONFIG.INTRO_PHOTOS`. All frames are **preloaded** before the 200ms sequence. After the flash, polaroids fly toward real pin positions on the map, then the map becomes fully interactive.
 
+## Friend heart pins
+
+Anonymous red **♥** markers on the map (no labels). Data in `data/friends.js`; photos in `assets/friends/`. Re-sync from `personal project_21/Friends` via `scripts/sync-media-from-folders.ps1`. Hearts do **not** count toward the 21-place progress bar.
+
+## Reel video stills
+
+While a clip loads, reels show a **placeholder image** from `CONFIG.REEL_VIDEO_STILL` in `config.js` (paths into `assets/intro/` — same pool as the intro flash). One intro frame per map pin; all videos in that pin’s reel share it. Change the mapping there if you want a different photo on a pin.
+
 ---
 
 Relative paths only — safe for GitHub Pages project sites.

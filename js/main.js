@@ -2,12 +2,29 @@
  * App flow: gate → intro → map. Progress, storage, celebration.
  */
 (function () {
+  const VALID_LOCATION_IDS = new Set(LOCATIONS.map((l) => l.id));
+  const LOCATION_TOTAL = LOCATIONS.length;
+
   const state = {
     discovered: new Set(),
     introComplete: false,
   };
 
   const els = {};
+
+  function locationDiscoveryCount() {
+    let n = 0;
+    state.discovered.forEach((id) => {
+      if (VALID_LOCATION_IDS.has(id)) n += 1;
+    });
+    return n;
+  }
+
+  function pruneDiscoveredSet() {
+    for (const id of [...state.discovered]) {
+      if (!VALID_LOCATION_IDS.has(id)) state.discovered.delete(id);
+    }
+  }
 
   function $(id) {
     return document.getElementById(id);
@@ -54,6 +71,7 @@
       if (raw) {
         JSON.parse(raw).forEach((id) => state.discovered.add(id));
       }
+      pruneDiscoveredSet();
     } catch (_) {
       /* private mode / blocked storage */
     }
@@ -80,30 +98,33 @@
   }
 
   function updateProgress() {
-    const total = LOCATIONS.length;
-    const count = state.discovered.size;
+    const count = locationDiscoveryCount();
     $("progress-count").textContent = String(count);
-    const pct = total ? Math.round((count / total) * 100) : 0;
+    const pct = LOCATION_TOTAL
+      ? Math.round((count / LOCATION_TOTAL) * 100)
+      : 0;
     $("progress-pct").textContent = String(pct);
     $("progress-fill").style.width = pct + "%";
   }
 
   function markDiscovered(id) {
+    if (!VALID_LOCATION_IDS.has(id)) return;
     if (state.discovered.has(id)) return;
     state.discovered.add(id);
     saveDiscovered();
-    MapController.setDiscovered(state.discovered);
     updateProgress();
 
-    const total = LOCATIONS.length;
-    if (
+    const count = locationDiscoveryCount();
+    const justFinishedAll =
       state.introComplete &&
-      total > 0 &&
-      state.discovered.size >= total &&
-      $("final-screen").dataset.shown !== "1"
-    ) {
-      setTimeout(showCelebration, 700);
-    }
+      LOCATION_TOTAL > 0 &&
+      count === LOCATION_TOTAL &&
+      $("final-screen").dataset.shown !== "1";
+
+    requestAnimationFrame(() => {
+      MapController.setDiscovered(state.discovered);
+      if (justFinishedAll) showCelebration();
+    });
   }
 
   /* --- Gate (soft only — hash is in source; not real security) --- */
@@ -282,20 +303,27 @@
   function showCelebration() {
     if ($("final-screen").dataset.shown === "1") return;
     $("final-screen").dataset.shown = "1";
+
     const msg = CONFIG.FINAL_MESSAGE;
     const textEl = $("final-message-text");
+    const btn = $("btn-final-close");
     textEl.textContent = [msg.headline, msg.birthday, msg.closing].join("\n\n");
     textEl.classList.remove("is-visible");
+    btn.classList.remove("is-visible");
+
     if (LocationPanel.isOpen && LocationPanel.isOpen()) {
       LocationPanel.close();
     }
+
     const screen = $("final-screen");
     screen.hidden = false;
     screen.classList.remove("is-active");
+
     requestAnimationFrame(() => {
+      screen.classList.add("is-active");
       requestAnimationFrame(() => {
-        screen.classList.add("is-active");
-        setTimeout(() => textEl.classList.add("is-visible"), 420);
+        textEl.classList.add("is-visible");
+        btn.classList.add("is-visible");
       });
     });
   }
@@ -316,7 +344,15 @@
     loadDiscovered();
 
     LocationPanel.init({
-      onFirstOpen: (id) => markDiscovered(id),
+      onFirstOpen: (id) => {
+        if (
+          typeof FRIEND_HEARTS !== "undefined" &&
+          FRIEND_HEARTS.some((f) => f.id === id)
+        ) {
+          return;
+        }
+        markDiscovered(id);
+      },
       onClose: () => MapController.clearFocus(),
     });
 

@@ -27,7 +27,6 @@ $introSrc = Join-Path $base "start up photographs"
 Copy-IfExists "$base\ulwe\ulwe (1).jpg" "$proj\ulwe\01.jpg"
 Copy-IfExists "$base\ulwe\ulwe (1).mp4" "$proj\ulwe\01.mp4"
 Copy-IfExists "$base\ulwe\ulwe (2).jpg" "$proj\ulwe\02.jpg"
-Copy-IfExists "$base\ulwe\ulwe (2).mp4" "$proj\ulwe\02.mp4"
 Copy-IfExists "$base\ulwe\ulwe (3).mp4" "$proj\ulwe\03.mp4"
 
 # Marine Drive
@@ -146,4 +145,12 @@ Copy-IfExists "$base\bandra\bandra (2).mp4" "$proj\bandra\02.mp4"
 Copy-IfExists "$base\colaba\colaba (1).jpg" "$proj\colaba-causeway\01.jpg"
 Copy-IfExists "$base\colaba\colaba (2).jpg" "$proj\colaba-causeway\02.jpg"
 
-Write-Host "`nDone. Then: git add assets/ data/locations.js ; git commit ; git push"
+# Friend heart photos (data/friends.js)
+$friendsSrc = Join-Path $base "Friends"
+$friendsDst = Join-Path $proj "friends"
+New-Item -ItemType Directory -Force -Path $friendsDst | Out-Null
+Get-ChildItem -LiteralPath $friendsSrc -Filter "*.jpeg" -ErrorAction SilentlyContinue | ForEach-Object {
+  Copy-IfExists $_.FullName (Join-Path $friendsDst $_.Name)
+}
+
+Write-Host "`nDone. Then: git add assets/ data/ ; git commit ; git push"

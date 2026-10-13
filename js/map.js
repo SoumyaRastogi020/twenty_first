@@ -38,7 +38,21 @@ const MapController = (function () {
     });
   }
 
+  function isFriendHeart(loc) {
+    return loc && loc.pinStyle === "friend-heart";
+  }
+
+  function createFriendHeartIcon() {
+    return L.divIcon({
+      className: "leaflet-pin-icon leaflet-friend-heart-icon",
+      html: '<span class="pin-hit pin-hit--heart"><span class="map-heart" aria-hidden="true">♥</span></span>',
+      iconSize: [30, 30],
+      iconAnchor: [15, 15],
+    });
+  }
+
   function iconForLocation(loc, isDiscovered) {
+    if (isFriendHeart(loc)) return createFriendHeartIcon();
     return createPinIcon(isDiscovered);
   }
 
@@ -182,33 +196,44 @@ const MapController = (function () {
       iconCreateFunction: createClusterIcon,
     });
 
-    LOCATIONS.forEach((loc) => {
-      const isDisc = discovered.has(loc.id);
+    function addMapPin(loc, { trackDiscovery }) {
+      const isDisc = trackDiscovery && discovered.has(loc.id);
       const marker = L.marker([loc.lat, loc.lng], {
         icon: iconForLocation(loc, isDisc),
-        alt: loc.name,
+        alt: isFriendHeart(loc) ? "A note" : loc.name,
       });
       marker._locId = loc.id;
       marker._discovered = isDisc;
       marker._loc = loc;
+      marker._isFriendHeart = isFriendHeart(loc);
 
-      marker.bindTooltip(loc.name, {
-        direction: "top",
-        offset: [0, -12],
-        className: "pin-tooltip",
-        opacity: 0.95,
-      });
+      if (!marker._isFriendHeart) {
+        marker.bindTooltip(loc.name, {
+          direction: "top",
+          offset: [0, -12],
+          className: "pin-tooltip",
+          opacity: 0.95,
+        });
+      }
 
       marker.on("click", () => {
-        focusedPinId = loc.id;
-        marker.openTooltip();
+        if (!marker._isFriendHeart) {
+          focusedPinId = loc.id;
+          marker.openTooltip();
+        }
         if (onPinActivate) onPinActivate(loc);
         panForOpenPanel(loc);
       });
 
       markersById.set(loc.id, marker);
       clusterGroup.addLayer(marker);
-    });
+    }
+
+    LOCATIONS.forEach((loc) => addMapPin(loc, { trackDiscovery: true }));
+
+    if (typeof FRIEND_HEARTS !== "undefined") {
+      FRIEND_HEARTS.forEach((loc) => addMapPin(loc, { trackDiscovery: false }));
+    }
 
     map.addLayer(clusterGroup);
 
@@ -252,6 +277,7 @@ const MapController = (function () {
     if (!map) return;
     const showAll = map.getZoom() >= CONFIG.MAP_LABEL_ZOOM;
     markersById.forEach((marker, id) => {
+      if (marker._isFriendHeart) return;
       const loc = marker._loc;
       const keepOpen = showAll || focusedPinId === id;
       marker.unbindTooltip();
@@ -345,6 +371,7 @@ const MapController = (function () {
 
   function refreshMarkerStyles() {
     markersById.forEach((marker, id) => {
+      if (marker._isFriendHeart) return;
       const isDisc = discovered.has(id);
       marker._discovered = isDisc;
       marker.setIcon(iconForLocation(marker._loc, isDisc));

@@ -41,6 +41,30 @@ const CONFIG = {
     "assets/intro/20.jpg",
   ],
 
+  /**
+   * Lazy-load still for every video in that location's reel (reuse intro photos — no extra files).
+   * Use a different intro frame per pin so stills don't match reel photos. Edit paths to taste.
+   */
+  REEL_VIDEO_STILL: {
+    borivali: "assets/intro/01.jpg",
+    "local-train-rides": "assets/intro/02.jpg",
+    sgnp: "assets/intro/03.jpg",
+    jogeshwari: "assets/intro/04.jpg",
+    "santacruz-metro": "assets/intro/05.jpg",
+    khar: "assets/intro/06.jpg",
+    bandra: "assets/intro/07.jpg",
+    "lower-parel": "assets/intro/08.jpg",
+    "charni-road": "assets/intro/09.jpg",
+    "marine-drive": "assets/intro/10.jpg",
+    "xaviers-college": "assets/intro/11.jpg",
+    fort: "assets/intro/12.jpg",
+    "kala-ghoda": "assets/intro/13.jpg",
+    ulwe: "assets/intro/14.jpg",
+    "mapro-lonavla": "assets/intro/15.jpg",
+    pune: "assets/intro/16.jpg",
+    nashik: "assets/intro/17.jpg",
+  },
+
   /** Full-screen message after the last pin is opened (first time this visit). */
   FINAL_MESSAGE: {
     headline: "Congratulations on finding them all!",

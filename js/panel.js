@@ -168,8 +168,9 @@ const LocationPanel = (function () {
       const video = document.createElement("video");
       video.controls = true;
       video.playsInline = true;
-      video.preload = "metadata";
-      if (block.poster) video.poster = block.poster;
+      video.preload = "none";
+      const poster = MediaUtils.videoPosterSrc(block);
+      if (poster) video.poster = poster;
       video.src = block.src;
       video.onerror = () => {
         wrap.innerHTML = '<p class="media-missing">Video coming soon</p>';
@@ -189,20 +190,66 @@ const LocationPanel = (function () {
       .replace(/"/g, "&quot;");
   }
 
+  function renderFriendNote(location) {
+    const wrap = document.createElement("div");
+    wrap.className = "friend-note";
+
+    const img = document.createElement("img");
+    img.className = "friend-note__photo";
+    img.src = location.photo;
+    img.alt = "";
+    img.loading = "eager";
+    img.decoding = "async";
+    img.onerror = () => {
+      img.replaceWith(
+        Object.assign(document.createElement("p"), {
+          className: "media-missing",
+          textContent: "Photo soon",
+        })
+      );
+    };
+    wrap.appendChild(img);
+
+    const text = document.createElement("div");
+    text.className = "friend-note__text";
+    const p = document.createElement("p");
+    p.className = "friend-note__message";
+    p.textContent = location.note || "";
+    text.appendChild(p);
+    if (location.meta) {
+      const meta = document.createElement("p");
+      meta.className = "friend-note__meta";
+      meta.textContent = location.meta;
+      text.appendChild(meta);
+    }
+    wrap.appendChild(text);
+
+    return wrap;
+  }
+
   function open(location, isDiscovered) {
     if (reelCleanup) {
       reelCleanup();
       reelCleanup = null;
     }
 
-    els.title.textContent = location.name;
-    els.body.innerHTML = "";
-    const isReel = location.presentation === "reel";
+    const isFriend = location.presentation === "friend-note";
+    const isReel = !isFriend && location.presentation === "reel";
 
+    els.title.textContent = isFriend ? "" : location.name;
+    els.title.hidden = isFriend;
+    els.title.closest(".panel-header").hidden = isFriend;
+
+    els.body.innerHTML = "";
+
+    els.root.classList.toggle("is-friend-note", isFriend);
     els.root.classList.toggle("is-reel", isReel);
+    els.sheet.classList.toggle("is-friend-sheet", isFriend);
     els.sheet.classList.toggle("is-reel-sheet", isReel);
 
-    if (isReel) {
+    if (isFriend) {
+      els.body.appendChild(renderFriendNote(location));
+    } else if (isReel) {
       if (typeof ReelPanel === "undefined") {
         console.error(
           "ReelPanel not loaded — check that js/reel-panel.js is deployed."
@@ -248,8 +295,11 @@ const LocationPanel = (function () {
         reelCleanup();
         reelCleanup = null;
       }
-      els.root.classList.remove("is-reel");
-      els.sheet.classList.remove("is-reel-sheet");
+      els.root.classList.remove("is-reel", "is-friend-note");
+      els.sheet.classList.remove("is-reel-sheet", "is-friend-sheet");
+      els.title.hidden = false;
+      const header = els.title.closest(".panel-header");
+      if (header) header.hidden = false;
       els.root.hidden = true;
       els.root.setAttribute("aria-hidden", "true");
       if (onClosePanel) onClosePanel();

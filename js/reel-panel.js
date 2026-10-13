@@ -4,7 +4,7 @@
 const ReelPanel = (function () {
   const SCROLL_PX_PER_SEC = 32;
 
-  function createItem(block) {
+  function createItem(block, locationId) {
     const item = document.createElement("div");
     item.className = "reel-item";
 
@@ -20,6 +20,7 @@ const ReelPanel = (function () {
       img.src = block.src;
       img.alt = block.caption || "";
       img.loading = "lazy";
+      img.decoding = "async";
       img.draggable = false;
       img.onerror = () => {
         item.innerHTML = '<span class="reel-item__missing">Photo soon</span>';
@@ -30,20 +31,49 @@ const ReelPanel = (function () {
 
     if (block.type === "video") {
       item.classList.add("reel-item--video");
+      const wrap = document.createElement("div");
+      wrap.className = "reel-video-wrap";
+
+      const posterSrc = MediaUtils.videoPosterSrc(block, locationId);
+      const posterImg = document.createElement("img");
+      posterImg.className = "reel-video-poster";
+      posterImg.alt = "";
+      posterImg.decoding = "async";
+      posterImg.draggable = false;
+
       const video = document.createElement("video");
-      video.src = block.src;
       video.muted = true;
       video.defaultMuted = true;
-      video.autoplay = true;
       video.loop = true;
       video.playsInline = true;
       video.setAttribute("playsinline", "");
-      video.preload = "metadata";
-      if (block.poster) video.poster = block.poster;
-      video.onerror = () => {
-        item.innerHTML = '<span class="reel-item__missing">Video soon</span>';
-      };
-      item.appendChild(video);
+      video.preload = "none";
+      video.dataset.src = block.src;
+
+      function hidePoster() {
+        posterImg.classList.add("is-hidden");
+      }
+
+      if (posterSrc) {
+        posterImg.src = posterSrc;
+        posterImg.onerror = () => {
+          posterImg.classList.add("is-missing");
+        };
+      } else {
+        posterImg.classList.add("is-missing");
+      }
+
+      video.addEventListener(
+        "loadeddata",
+        () => {
+          hidePoster();
+        },
+        { once: true }
+      );
+
+      wrap.appendChild(video);
+      wrap.appendChild(posterImg);
+      item.appendChild(wrap);
       return item;
     }
 
@@ -63,6 +93,39 @@ const ReelPanel = (function () {
       .replace(/>/g, "&gt;");
   }
 
+  function attachLazyVideos(track, viewport) {
+    const items = track.querySelectorAll(".reel-item--video");
+    if (!items.length) return;
+
+    const loadItem = (item) => {
+      if (item.dataset.videoLoaded === "1") return;
+      const video = item.querySelector("video");
+      if (!video || !video.dataset.src) return;
+      item.dataset.videoLoaded = "1";
+      video.src = video.dataset.src;
+      video.load();
+      video.play().catch(() => {});
+    };
+
+    if (!("IntersectionObserver" in window)) {
+      items.forEach((item) => loadItem(item));
+      return;
+    }
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) loadItem(entry.target);
+        });
+      },
+      { root: viewport, rootMargin: "120px 0px", threshold: 0.05 }
+    );
+
+    items.forEach((item) => io.observe(item));
+
+    return () => io.disconnect();
+  }
+
   /**
    * @returns {() => void} cleanup when panel closes
    */
@@ -75,13 +138,14 @@ const ReelPanel = (function () {
     track.className = "reel-track";
 
     (location.content || []).forEach((block) => {
-      const el = createItem(block);
+      const el = createItem(block, location.id);
       if (el) track.appendChild(el);
     });
 
     viewport.appendChild(track);
     bodyEl.appendChild(viewport);
 
+    const disconnectLazy = attachLazyVideos(track, viewport);
     const videos = track.querySelectorAll("video");
     let paused = false;
     let offsetPx = 0;
@@ -105,6 +169,10 @@ const ReelPanel = (function () {
     function onVideoActivate(video, e) {
       if (e) e.stopPropagation();
       pauseReel();
+      if (!video.src && video.dataset.src) {
+        video.src = video.dataset.src;
+        video.load();
+      }
       videos.forEach((v) => {
         if (v !== video) {
           v.pause();
@@ -119,7 +187,6 @@ const ReelPanel = (function () {
 
     videos.forEach((video) => {
       video.addEventListener("click", (e) => onVideoActivate(video, e));
-      video.play().catch(() => {});
     });
 
     track.querySelectorAll(".reel-item--photo img").forEach((img) => {
@@ -166,6 +233,7 @@ const ReelPanel = (function () {
     return function cleanup() {
       if (rafId) cancelAnimationFrame(rafId);
       window.removeEventListener("resize", onResize);
+      if (disconnectLazy) disconnectLazy();
       videos.forEach((v) => {
         v.pause();
         v.removeAttribute("src");

@@ -346,7 +346,6 @@ const LOCATIONS = [
       { type: "video", src: "assets/ulwe/01.mp4", poster: "assets/ulwe/01.jpg" },
       { type: "photo", src: "assets/ulwe/02.jpg", caption: "" },
       { type: "snippet", text: "and to prawns fried rice ;)" },
-      { type: "video", src: "assets/ulwe/02.mp4", poster: "assets/ulwe/02.jpg" },
       { type: "video", src: "assets/ulwe/03.mp4", poster: "assets/ulwe/02.jpg" },
     ],
   },
