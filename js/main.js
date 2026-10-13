@@ -225,7 +225,7 @@
               $("flash-frame").hidden = true;
               flashScreen.hidden = true;
               flashScreen.classList.remove("is-active");
-              MapController.flyToFullTrip();
+              MapController.flyToSouthMumbai();
               finishIntro({ animateView: false });
             }
           );
@@ -283,9 +283,9 @@
     if ($("final-screen").dataset.shown === "1") return;
     $("final-screen").dataset.shown = "1";
     const msg = CONFIG.FINAL_MESSAGE;
-    $("final-line-headline").textContent = msg.headline;
-    $("final-line-birthday").textContent = msg.birthday;
-    $("final-line-closing").textContent = msg.closing;
+    const textEl = $("final-message-text");
+    textEl.textContent = [msg.headline, msg.birthday, msg.closing].join("\n\n");
+    textEl.classList.remove("is-visible");
     if (LocationPanel.isOpen && LocationPanel.isOpen()) {
       LocationPanel.close();
     }
@@ -293,49 +293,17 @@
     screen.hidden = false;
     screen.classList.remove("is-active");
     requestAnimationFrame(() => {
-      requestAnimationFrame(() => screen.classList.add("is-active"));
-    });
-    runConfetti();
-  }
-
-  function runConfetti() {
-    const canvas = $("confetti-canvas");
-    const ctx = canvas.getContext("2d");
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduced) return;
-
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    const pieces = Array.from({ length: 120 }, () => ({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height - canvas.height,
-      r: 4 + Math.random() * 6,
-      vx: (Math.random() - 0.5) * 2,
-      vy: 2 + Math.random() * 4,
-      color: ["#ff6b6b", "#7ec4a8", "#ffd93d", "#ff9a8b"][
-        Math.floor(Math.random() * 4)
-      ],
-    }));
-
-    let frame = 0;
-    function draw() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      pieces.forEach((p) => {
-        p.x += p.vx;
-        p.y += p.vy;
-        ctx.fillStyle = p.color;
-        ctx.fillRect(p.x, p.y, p.r, p.r * 0.6);
+      requestAnimationFrame(() => {
+        screen.classList.add("is-active");
+        setTimeout(() => textEl.classList.add("is-visible"), 420);
       });
-      frame += 1;
-      if (frame < 240) requestAnimationFrame(draw);
-      else ctx.clearRect(0, 0, canvas.width, canvas.height);
-    }
-    draw();
+    });
   }
 
   function bindFinal() {
     $("btn-final-close").addEventListener("click", () => {
       const screen = $("final-screen");
+      $("final-message-text").classList.remove("is-visible");
       screen.classList.remove("is-active");
       setTimeout(() => {
         screen.hidden = true;

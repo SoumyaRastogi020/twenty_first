@@ -78,7 +78,10 @@ const LOCATIONS = [
     lng: 72.849,
     presentation: "reel",
     content: [
-      { type: "snippet", text: "…" },
+      {
+        type: "snippet",
+        text: 'home is wherever I\'m with youuuu"-edith whiskers',
+      },
       {
         type: "video",
         src: "assets/jogeshwari/01.mp4",
@@ -116,7 +119,10 @@ const LOCATIONS = [
     lng: 72.8396,
     presentation: "reel",
     content: [
-      { type: "snippet", text: "…" },
+      {
+        type: "snippet",
+        text: "\"our little group has always been, And always will until the end\" -Nirvana",
+      },
       { type: "video", src: "assets/khar/01.mp4", poster: "assets/khar/01.jpg" },
       { type: "photo", src: "assets/khar/01.jpg", caption: "" },
       { type: "photo", src: "assets/khar/02.jpg", caption: "" },
@@ -131,7 +137,7 @@ const LOCATIONS = [
     lng: 72.8402,
     presentation: "reel",
     content: [
-      { type: "snippet", text: "…" },
+      { type: "snippet", text: "sidequest maxxingggggg" },
       { type: "video", src: "assets/bandra/01.mp4" },
       { type: "video", src: "assets/bandra/02.mp4" },
     ],
@@ -181,7 +187,10 @@ const LOCATIONS = [
     lng: 72.823,
     presentation: "reel",
     content: [
-      { type: "snippet", text: "…" },
+      {
+        type: "snippet",
+        text: "beaches, coffee, pancakes and you",
+      },
       {
         type: "video",
         src: "assets/charni-road/01.mp4",
@@ -189,8 +198,11 @@ const LOCATIONS = [
       },
       { type: "photo", src: "assets/charni-road/01.jpg", caption: "" },
       { type: "photo", src: "assets/charni-road/02.jpg", caption: "" },
+      {
+        type: "snippet",
+        text: "you've got a smile that could light up this whole town",
+      },
       { type: "photo", src: "assets/charni-road/03.jpg", caption: "" },
-      { type: "snippet", text: "…" },
     ],
   },
   {
@@ -237,7 +249,10 @@ const LOCATIONS = [
     lng: 72.832,
     presentation: "reel",
     content: [
-      { type: "snippet", text: "…" },
+      {
+        type: "snippet",
+        text: "forever grateful to xaviers bonding",
+      },
       {
         type: "video",
         src: "assets/xaviers-college/01.mp4",
@@ -250,10 +265,13 @@ const LOCATIONS = [
         src: "assets/xaviers-college/02.mp4",
         poster: "assets/xaviers-college/02.jpg",
       },
+      {
+        type: "snippet",
+        text: "look at the stars, look how they shine for you, and everything you do",
+      },
       { type: "photo", src: "assets/xaviers-college/03.jpg", caption: "" },
       { type: "photo", src: "assets/xaviers-college/04.jpg", caption: "" },
       { type: "photo", src: "assets/xaviers-college/05.jpg", caption: "" },
-      { type: "snippet", text: "…" },
     ],
   },
   {
@@ -263,12 +281,18 @@ const LOCATIONS = [
     lng: 72.835,
     presentation: "reel",
     content: [
-      { type: "snippet", text: "…" },
+      {
+        type: "snippet",
+        text: "you're my santa and my gift",
+      },
       { type: "video", src: "assets/fort/01.mp4", poster: "assets/fort/01.jpg" },
       { type: "photo", src: "assets/fort/01.jpg", caption: "" },
       { type: "photo", src: "assets/fort/02.jpg", caption: "" },
+      {
+        type: "snippet",
+        text: "you and i belong togetherrrr, like cold iced tea and warm weatherrrr",
+      },
       { type: "video", src: "assets/fort/02.mp4", poster: "assets/fort/02.jpg" },
-      { type: "snippet", text: "…" },
     ],
   },
   {
@@ -302,7 +326,10 @@ const LOCATIONS = [
     presentation: "reel",
     content: [
       { type: "photo", src: "assets/colaba-causeway/01.jpg", caption: "" },
-      { type: "snippet", text: "…" },
+      {
+        type: "snippet",
+        text: "always up for boat rides with you ;)",
+      },
       { type: "photo", src: "assets/colaba-causeway/02.jpg", caption: "" },
     ],
   },

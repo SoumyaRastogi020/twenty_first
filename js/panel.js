@@ -25,9 +25,17 @@ const LocationPanel = (function () {
       lightboxClose: document.getElementById("lightbox-close"),
     };
 
-    els.close.addEventListener("click", close);
+    els.close.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      close();
+    });
     els.backdrop.addEventListener("click", close);
-    els.lightboxClose.addEventListener("click", closeLightbox);
+    els.lightboxClose.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      closeLightbox();
+    });
     els.lightbox.addEventListener("click", (e) => {
       if (e.target === els.lightbox) closeLightbox();
     });
@@ -45,6 +53,9 @@ const LocationPanel = (function () {
       "pointerdown",
       (e) => {
         if (window.matchMedia("(min-width: 900px)").matches) return;
+        if (e.target.closest(".panel-close, .panel-close *, button, a, input, textarea")) {
+          return;
+        }
         if (e.target.closest(".reel-viewport")) return;
         if (e.target.closest(".panel-body") && sheet.scrollTop > 0) return;
         start(e.clientY);

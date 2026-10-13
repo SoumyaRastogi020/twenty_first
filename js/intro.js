@@ -4,24 +4,8 @@
 const IntroFlow = (function () {
   const FLASH_MS = 200;
   const GRID_HOLD_MS = 1100;
-  const GRID_HOLD_LITE_MS = 750;
   const FLY_MS = 2000;
   const FLY_MS_MOBILE = 1400;
-  const FADE_LITE_MS = 900;
-
-  function useLiteDisperse() {
-    const mode =
-      typeof CONFIG !== "undefined" && CONFIG.INTRO_DISPERSE
-        ? CONFIG.INTRO_DISPERSE
-        : "auto";
-    if (mode === "lite") return true;
-    if (mode === "full") return false;
-    return (
-      typeof window !== "undefined" &&
-      (window.matchMedia("(max-width: 899px)").matches ||
-        window.matchMedia("(pointer: coarse)").matches)
-    );
-  }
 
   function preloadImages(urls) {
     return Promise.all(
@@ -114,16 +98,6 @@ const IntroFlow = (function () {
     });
   }
 
-  /** Fade grid out — lighter than flying 20 polaroids (better on mobile). */
-  function runDisperseLite(container, backdrop, grid, onComplete) {
-    backdrop.classList.add("is-clear");
-    grid.classList.add("is-dispersing-lite");
-    setTimeout(() => {
-      container.innerHTML = "";
-      onComplete();
-    }, FADE_LITE_MS);
-  }
-
   /**
    * Show all photos in a grid, then fly each one toward map pin positions (visible shrink).
    */
@@ -138,8 +112,6 @@ const IntroFlow = (function () {
       onComplete();
       return;
     }
-
-    const lite = useLiteDisperse();
 
     const backdrop = document.createElement("div");
     backdrop.className = "intro-grid-backdrop";
@@ -162,16 +134,11 @@ const IntroFlow = (function () {
       return { el, i };
     });
 
-    if (reduced || lite) {
-      const hold = lite ? GRID_HOLD_LITE_MS : 400;
+    if (reduced) {
       setTimeout(() => {
-        if (reduced) {
-          container.innerHTML = "";
-          onComplete();
-          return;
-        }
-        runDisperseLite(container, backdrop, grid, onComplete);
-      }, hold);
+        container.innerHTML = "";
+        onComplete();
+      }, 400);
       return;
     }
 

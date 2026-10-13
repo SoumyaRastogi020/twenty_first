@@ -11,11 +11,11 @@
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
     <title>Twenty First — Bombay Map</title>
-    <!-- build: 2026-10-12-v19 -->
+    <!-- build: 2026-10-12-v20 -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=Pacifico&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap"
       rel="stylesheet"
     />
     <link
@@ -36,7 +36,7 @@
       crossorigin="anonymous"
       referrerpolicy="no-referrer"
     />
-    <link rel="stylesheet" href="css/style.css?v=19" />
+    <link rel="stylesheet" href="css/style.css?v=23" />
   </head>
   <body>
     <!-- Optional soft gate (see config.js) -->
@@ -154,20 +154,19 @@
       <p class="lightbox-caption" id="lightbox-caption"></p>
     </div>
 
-    <div id="final-screen" class="screen screen--final" hidden>
-      <div class="final-message" id="final-message">
-        <p class="final-line final-line--headline" id="final-line-headline"></p>
-        <p class="final-line final-line--birthday" id="final-line-birthday"></p>
-        <p class="final-line final-line--closing" id="final-line-closing"></p>
+    <div id="final-screen" class="screen screen--final screen--message" hidden>
+      <div class="intro-message-layout">
+        <p class="intro-message final-message-text" id="final-message-text"></p>
+        <div class="intro-message-actions">
+          <button type="button" class="btn btn--primary btn--continue" id="btn-final-close">
+            Back to map
+          </button>
+        </div>
       </div>
-      <button type="button" class="final-dismiss" id="btn-final-close" aria-label="Back to map">
-        ×
-      </button>
-      <canvas id="confetti-canvas" class="confetti-canvas" aria-hidden="true"></canvas>
     </div>
 
-    <script src="config.js?v=19"></script>
-    <script src="data/locations.js?v=18"></script>
+    <script src="config.js?v=20"></script>
+    <script src="data/locations.js?v=21"></script>
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"
       crossorigin="anonymous"
@@ -178,10 +177,10 @@
       crossorigin="anonymous"
       referrerpolicy="no-referrer"
     ></script>
-    <script src="js/intro.js?v=19"></script>
-    <script src="js/map.js?v=18"></script>
+    <script src="js/intro.js?v=20"></script>
+    <script src="js/map.js?v=20"></script>
     <script src="js/reel-panel.js?v=18"></script>
-    <script src="js/panel.js?v=18"></script>
-    <script src="js/main.js?v=18"></script>
+    <script src="js/panel.js?v=23"></script>
+    <script src="js/main.js?v=23"></script>
   </body>
 </html>

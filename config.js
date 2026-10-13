@@ -41,12 +41,6 @@ const CONFIG = {
     "assets/intro/20.jpg",
   ],
 
-  /**
-   * Intro grid → map handoff. "auto" = fade on phones (smoother); "lite" = always fade;
-   * "full" = always fly polaroids to pins (heavier on mobile).
-   */
-  INTRO_DISPERSE: "auto",
-
   /** Full-screen message after the last pin is opened (first time this visit). */
   FINAL_MESSAGE: {
     headline: "Congratulations on finding them all!",
@@ -66,6 +60,9 @@ const CONFIG = {
   /** Place names stay open as tooltips at this zoom and above */
   MAP_LABEL_ZOOM: 14,
   MAP_FIT_PADDING: [48, 48],
+  /** Initial map view after intro / skip (South Mumbai pins) */
+  MAP_SOUTH_MUMBAI_PADDING: [32, 32],
+  MAP_SOUTH_MUMBAI_MAX_ZOOM: 14,
 
   MAP_TILE_VOYAGER: `https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${CARTO_API_KEY}`,
   MAP_TILE_SATELLITE:

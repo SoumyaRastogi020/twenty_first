@@ -282,11 +282,29 @@ const MapController = (function () {
     });
   }
 
+  function fitSouthMumbai(animate) {
+    if (!map || !southMumbaiBounds) return;
+    map.fitBounds(southMumbaiBounds, {
+      padding: CONFIG.MAP_SOUTH_MUMBAI_PADDING || CONFIG.MAP_FIT_PADDING,
+      animate: !!animate,
+      maxZoom: CONFIG.MAP_SOUTH_MUMBAI_MAX_ZOOM || 14,
+    });
+  }
+
+  function flyToSouthMumbai() {
+    if (!map || !southMumbaiBounds) return;
+    map.flyToBounds(southMumbaiBounds, {
+      padding: CONFIG.MAP_SOUTH_MUMBAI_PADDING || CONFIG.MAP_FIT_PADDING,
+      duration: 1.4,
+      maxZoom: CONFIG.MAP_SOUTH_MUMBAI_MAX_ZOOM || 14,
+    });
+  }
+
   /** Call before disperse: map visible behind overlay, bounds set for latLngToContainerPoint. */
   function prepareIntroView() {
     ensureMap();
     map.invalidateSize();
-    fitFullTrip(false);
+    fitSouthMumbai(false);
     updatePermanentTooltips();
   }
 
@@ -350,17 +368,17 @@ const MapController = (function () {
     updatePermanentTooltips();
   }
 
-  /** After intro (or skip): size map and optionally fly to full trip. */
+  /** After intro (or skip): size map and frame South Mumbai. */
   function onIntroComplete(animateView) {
     ensureMap();
     map.invalidateSize({ pan: false });
-    if (animateView) flyToFullTrip();
-    else fitFullTrip(false);
+    if (animateView) flyToSouthMumbai();
+    else fitSouthMumbai(false);
     updatePermanentTooltips();
     requestAnimationFrame(() => {
       if (!map) return;
       map.invalidateSize({ pan: false });
-      if (fullTripBounds && !animateView) fitFullTrip(false);
+      if (southMumbaiBounds && !animateView) fitSouthMumbai(false);
     });
   }
 
@@ -370,6 +388,7 @@ const MapController = (function () {
     clearFocus,
     prepareIntroView,
     flyToFullTrip,
+    flyToSouthMumbai,
     getDisperseTargetForIndex,
     panForOpenPanel,
     ensureMap,
